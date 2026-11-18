@@ -26,7 +26,7 @@
             --text: #ececea;
             --text2: #8b8b80;
             --accent: #D97757;
-            --accent-dim: rgba(217,119,87,0.12);
+            --accent-dim: rgba(217,119,87,0.14);
             --green: #5cb585;
             --green-bg: rgba(92,181,133,0.1);
             --red: #e06c5c;
@@ -42,11 +42,39 @@
             flex-direction: column;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
-        /* safe area for notch devices */
-        .header { padding-top: max(12px, env(safe-area-inset-top)); }
+        /* Safe area for notch devices */
+        .header { padding-top: max(10px, env(safe-area-inset-top)); }
         .table-area { margin-bottom: max(8px, env(safe-area-inset-bottom)); }
+
+        /* === PULL TO REFRESH INDICATOR === */
+        .pull-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--surface2);
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 600;
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            z-index: 999;
+            border-bottom: 1px solid var(--border);
+            pointer-events: none;
+        }
+
+        .pull-indicator iconify-icon {
+            font-size: 1rem;
+        }
 
         /* === HEADER === */
         .header {
@@ -76,27 +104,61 @@
             letter-spacing: -0.01em;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .clock-box {
             display: flex;
             align-items: center;
             gap: 6px;
             background: var(--surface);
-            padding: 5px 12px;
+            padding: 5px 10px;
             border-radius: 8px;
             border: 1px solid var(--border);
         }
 
         .clock-box iconify-icon {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--accent);
         }
 
         .clock-box span {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 600;
             font-variant-numeric: tabular-nums;
             color: var(--text);
             letter-spacing: 0.5px;
+        }
+
+        /* Refresh Button */
+        .btn-refresh {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text2);
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: color 0.15s, border-color 0.15s, transform 0.25s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-refresh:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-refresh:active, .btn-refresh.spinning {
+            color: var(--accent);
+            border-color: var(--accent);
+            transform: rotate(360deg);
         }
 
         /* === SUMMARY === */
@@ -111,7 +173,7 @@
             flex: 1;
             background: var(--surface);
             border-radius: 10px;
-            padding: 8px 0;
+            padding: 7px 0;
             text-align: center;
             border: 1px solid var(--border);
         }
@@ -161,7 +223,7 @@
         table {
             border-collapse: separate;
             border-spacing: 0;
-            min-width: 600px;
+            min-width: 550px;
             width: 100%;
         }
 
@@ -170,7 +232,7 @@
             top: 0;
             z-index: 2;
             background: var(--surface2);
-            padding: 10px 8px;
+            padding: 9px 8px;
             font-size: 0.62rem;
             font-weight: 600;
             color: var(--text2);
@@ -189,7 +251,7 @@
 
         thead th iconify-icon { font-size: 0.8rem; }
 
-        /* Sticky columns */
+        /* Sticky columns: No + Akun */
         th:nth-child(1), td:nth-child(1) {
             position: sticky;
             left: 0;
@@ -220,11 +282,11 @@
         }
 
         th:nth-child(3) { min-width: 88px; }
-        th:nth-child(4) { min-width: 88px; }
+        th:nth-child(4) { min-width: 150px; }
         th:nth-child(5) { min-width: 160px; }
 
         tbody td {
-            padding: 7px 8px;
+            padding: 6px 8px;
             font-size: 0.8rem;
             white-space: nowrap;
             border-bottom: 1px solid var(--border);
@@ -245,7 +307,7 @@
             font-size: 0.8rem;
         }
 
-        /* Badge */
+        /* Badge Status */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -272,17 +334,24 @@
             color: var(--red);
         }
 
-        /* Time input */
+        /* Reset Time & Day Toggle */
+        .reset-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         .time-input {
             background: var(--bg);
             border: 1px solid var(--border);
             border-radius: 6px;
             color: var(--text);
-            padding: 4px 5px;
-            font-size: 0.75rem;
+            padding: 3px 5px;
+            font-size: 0.74rem;
             font-family: inherit;
-            width: 80px;
+            width: 76px;
             outline: none;
+            user-select: auto;
         }
 
         .time-input:focus { border-color: var(--accent); }
@@ -290,6 +359,37 @@
         .time-input::-webkit-calendar-picker-indicator {
             filter: invert(0.8) sepia(0.3) hue-rotate(-10deg) brightness(1.1);
             cursor: pointer;
+        }
+
+        .day-badge {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.62rem;
+            font-weight: 600;
+            font-family: inherit;
+            padding: 3px 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+            transition: all 0.15s;
+            line-height: 1.1;
+        }
+
+        .day-badge.today {
+            color: var(--text2);
+            border-color: var(--border);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .day-badge.tomorrow {
+            color: var(--accent);
+            border-color: rgba(217, 119, 87, 0.45);
+            background: var(--accent-dim);
+        }
+
+        .day-badge:active {
+            transform: scale(0.92);
         }
 
         .dash { color: var(--border); }
@@ -306,6 +406,7 @@
             width: 100%;
             min-width: 140px;
             outline: none;
+            user-select: auto;
         }
 
         .task-input::placeholder { color: var(--text2); opacity: 0.4; }
@@ -315,31 +416,74 @@
             background: var(--bg);
         }
 
+        /* Toast feedback */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(40px);
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            pointer-events: none;
+            opacity: 0;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+            z-index: 9999;
+            text-align: center;
+            max-width: 90vw;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
 
         @media (max-width: 480px) {
             th:nth-child(1), td:nth-child(1) { width: 28px; min-width: 28px; }
-            th:nth-child(2), td:nth-child(2) { left: 28px; min-width: 100px; }
+            th:nth-child(2), td:nth-child(2) { left: 28px; min-width: 95px; }
             .cell-name { font-size: 0.74rem; }
-            .badge { padding: 3px 8px; font-size: 0.63rem; }
-            .badge iconify-icon { font-size: 0.78rem; }
+            .badge { padding: 3px 7px; font-size: 0.62rem; }
+            .badge iconify-icon { font-size: 0.75rem; }
+            .time-input { width: 70px; font-size: 0.7rem; padding: 2px 4px; }
+            .day-badge { font-size: 0.58rem; padding: 2px 5px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Pull to refresh indicator -->
+    <div class="pull-indicator" id="pullIndicator">
+        <iconify-icon icon="solar:restart-bold"></iconify-icon>
+        <span id="pullText">Tarik ke bawah untuk refresh</span>
+    </div>
+
+    <!-- Header -->
     <div class="header">
         <div class="header-left">
             <iconify-icon icon="solar:monitor-smartphone-bold-duotone"></iconify-icon>
             <h1>Monitor Akun</h1>
         </div>
-        <div class="clock-box">
-            <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
-            <span id="clock">--:--:--</span>
+        <div class="header-right">
+            <div class="clock-box">
+                <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
+                <span id="clock">--:--:--</span>
+            </div>
+            <button class="btn-refresh" id="refreshBtn" title="Segarkan Halaman" aria-label="Refresh">
+                <iconify-icon icon="solar:restart-bold"></iconify-icon>
+            </button>
         </div>
     </div>
 
+    <!-- Summary -->
     <div class="summary" id="summary"></div>
 
+    <!-- Table -->
     <div class="table-area">
         <div class="table-scroll">
             <table>
@@ -348,7 +492,7 @@
                         <th>#</th>
                         <th><div class="th-inner"><iconify-icon icon="solar:user-bold"></iconify-icon> Akun</div></th>
                         <th><div class="th-inner"><iconify-icon icon="solar:tag-horizontal-bold"></iconify-icon> Status</div></th>
-                        <th><div class="th-inner"><iconify-icon icon="solar:alarm-bold"></iconify-icon> Reset</div></th>
+                        <th><div class="th-inner"><iconify-icon icon="solar:alarm-bold"></iconify-icon> Selesai Limit</div></th>
                         <th><div class="th-inner"><iconify-icon icon="solar:pen-new-round-bold"></iconify-icon> Tugas</div></th>
                     </tr>
                 </thead>
@@ -357,26 +501,129 @@
         </div>
     </div>
 
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
 <script>
-// === PWA: Service Worker & Install ===
+// === PWA: Service Worker ===
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
 }
 
-// === App Logic ===
+// === Toast Helper ===
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// === Refresh button & Gesture ===
+const refreshBtn = document.getElementById('refreshBtn');
+refreshBtn.addEventListener('click', () => {
+    refreshBtn.classList.add('spinning');
+    setTimeout(() => location.reload(), 150);
+});
+
+// Gesture Pull-to-Refresh untuk HP
+let touchStartY = 0;
+let isPulling = false;
+const pullEl = document.getElementById('pullIndicator');
+const pullText = document.getElementById('pullText');
+
+window.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+        touchStartY = e.touches[0].clientY;
+        isPulling = false;
+    }
+}, { passive: true });
+
+window.addEventListener('touchmove', e => {
+    if (e.touches.length === 1) {
+        const tableScroll = document.querySelector('.table-scroll');
+        const isAtTop = !tableScroll || tableScroll.scrollTop <= 0;
+        const diff = e.touches[0].clientY - touchStartY;
+        if (diff > 25 && isAtTop) {
+            isPulling = true;
+            if (pullEl) {
+                const translateY = Math.min(diff * 0.35 - 42, 0);
+                pullEl.style.transform = `translateY(${translateY}px)`;
+                pullEl.style.opacity = Math.min(diff / 80, 1);
+                pullText.textContent = diff > 90 ? 'Lepaskan untuk refresh' : 'Tarik ke bawah untuk refresh';
+            }
+        }
+    }
+}, { passive: true });
+
+window.addEventListener('touchend', e => {
+    if (isPulling) {
+        const diff = (e.changedTouches[0] ? e.changedTouches[0].clientY : 0) - touchStartY;
+        if (diff > 90) {
+            if (pullEl) {
+                pullEl.style.transform = 'translateY(0)';
+                pullText.textContent = 'Memuat ulang...';
+            }
+            location.reload();
+            return;
+        }
+    }
+    if (pullEl) {
+        pullEl.style.transform = 'translateY(-100%)';
+        pullEl.style.opacity = '0';
+    }
+    isPulling = false;
+});
+
+// === Data & Storage ===
 const ACCOUNTS = [
     'bangridho22','bangridho41','h2787270','Cha Hae-in',
     'hh1508249','hidayat22ti','hidayatridho968','hosting ebr',
     'penguin','Ridho.dev','rdho.hdyat','ridhohidayat973'
 ];
-const KEY = 'claude_limit_v3';
+const KEY = 'claude_limit_v4';
 
-const defaults = () => ACCOUNTS.map(n => ({ name:n, status:'ok', reset:'', task:'' }));
+const defaults = () => ACCOUNTS.map(n => ({
+    name: n,
+    status: 'ok',
+    reset: '',
+    targetTimestamp: null,
+    task: ''
+}));
 
 function load() {
     try {
-        const d = JSON.parse(localStorage.getItem(KEY));
-        if (Array.isArray(d) && d.length === ACCOUNTS.length) return d;
+        // Cek key v4, jika belum ada cek key v3 untuk migrasi otomatis
+        let raw = localStorage.getItem(KEY);
+        if (!raw) raw = localStorage.getItem('claude_limit_v3');
+        if (raw) {
+            const d = JSON.parse(raw);
+            if (Array.isArray(d) && d.length === ACCOUNTS.length) {
+                return d.map(item => {
+                    let ts = item.targetTimestamp || null;
+                    // Jika ada jam reset tapi belum ada targetTimestamp
+                    if (item.status === 'limit' && item.reset && !ts) {
+                        const [h, m] = item.reset.split(':').map(Number);
+                        if (!isNaN(h) && !isNaN(m)) {
+                            const t = new Date();
+                            t.setHours(h, m, 0, 0);
+                            if (t.getTime() <= Date.now()) {
+                                t.setDate(t.getDate() + 1);
+                            }
+                            ts = t.getTime();
+                        }
+                    }
+                    return {
+                        name: item.name,
+                        status: item.status || 'ok',
+                        reset: item.reset || '',
+                        targetTimestamp: ts,
+                        task: item.task || ''
+                    };
+                });
+            }
+        }
     } catch(_){}
     return defaults();
 }
@@ -398,7 +645,7 @@ function tick() {
 }
 
 function renderSummary() {
-    const t = data.length, l = data.filter(a => a.status==='limit').length;
+    const t = data.length, l = data.filter(a => a.status === 'limit').length;
     summaryEl.innerHTML =
         '<div class="stat s-total"><div class="stat-val">'+t+'</div><div class="stat-label">Total</div></div>' +
         '<div class="stat s-avail"><div class="stat-val">'+(t-l)+'</div><div class="stat-label">Tersedia</div></div>' +
@@ -407,17 +654,23 @@ function renderSummary() {
 
 function render() {
     bodyEl.innerHTML = '';
+    const nowMs = Date.now();
+    const todayDateStr = new Date().toDateString();
+
     data.forEach((acc, i) => {
         const tr = document.createElement('tr');
 
+        // No
         const tdNo = document.createElement('td');
         tdNo.className = 'cell-no';
         tdNo.textContent = i + 1;
 
+        // Name
         const tdName = document.createElement('td');
         tdName.className = 'cell-name';
         tdName.textContent = acc.name;
 
+        // Status Badge
         const tdStatus = document.createElement('td');
         const badge = document.createElement('span');
         badge.className = 'badge ' + (acc.status === 'limit' ? 'limit' : 'ok');
@@ -425,20 +678,107 @@ function render() {
             ? '<iconify-icon icon="solar:close-circle-bold"></iconify-icon>Limit'
             : '<iconify-icon icon="solar:check-circle-bold"></iconify-icon>Aktif';
         badge.addEventListener('click', () => {
-            acc.status = acc.status === 'ok' ? 'limit' : 'ok';
-            if (acc.status === 'ok') acc.reset = '';
+            if (acc.status === 'ok') {
+                acc.status = 'limit';
+                acc.reset = '';
+                acc.targetTimestamp = null;
+            } else {
+                acc.status = 'ok';
+                acc.reset = '';
+                acc.targetTimestamp = null;
+            }
             save(); render();
         });
         tdStatus.appendChild(badge);
 
+        // Reset Time Column (Selesai Limit)
         const tdTime = document.createElement('td');
         if (acc.status === 'limit') {
+            const wrap = document.createElement('div');
+            wrap.className = 'reset-wrap';
+
+            // Time input
             const inp = document.createElement('input');
             inp.type = 'time';
             inp.className = 'time-input';
             inp.value = acc.reset;
-            inp.addEventListener('change', e => { acc.reset = e.target.value; save(); });
-            tdTime.appendChild(inp);
+            inp.addEventListener('change', e => {
+                const val = e.target.value;
+                acc.reset = val;
+                if (!val) {
+                    acc.targetTimestamp = null;
+                } else {
+                    const [h, m] = val.split(':').map(Number);
+                    const target = new Date();
+                    target.setHours(h, m, 0, 0);
+
+                    // JIKA JAM YANG DIPILIH <= JAM SEKARANG,
+                    // BERARTI MAKSUD PENGGUNA ADALAH UNTUK KEESOKAN HARINYA (BESOK)
+                    if (target.getTime() <= Date.now()) {
+                        target.setDate(target.getDate() + 1);
+                        showToast(`Diatur untuk Besok jam ${val}`);
+                    } else {
+                        showToast(`Diatur untuk Hari ini jam ${val}`);
+                    }
+                    acc.targetTimestamp = target.getTime();
+                }
+                save(); render();
+            });
+            wrap.appendChild(inp);
+
+            // Toggle Hari ini / Besok
+            if (acc.targetTimestamp) {
+                const targetDate = new Date(acc.targetTimestamp);
+                const isTom = targetDate.toDateString() !== todayDateStr;
+
+                const dayBtn = document.createElement('button');
+                dayBtn.type = 'button';
+                dayBtn.className = 'day-badge ' + (isTom ? 'tomorrow' : 'today');
+                dayBtn.textContent = isTom ? 'Besok' : 'Hari ini';
+
+                // Hitung sisa waktu untuk tooltip info
+                const diffMs = acc.targetTimestamp - nowMs;
+                if (diffMs > 0) {
+                    const totalMin = Math.round(diffMs / 60000);
+                    const hrs = Math.floor(totalMin / 60);
+                    const mins = totalMin % 60;
+                    const diffText = hrs > 0 ? `${hrs}j ${mins}m` : `${mins}m`;
+                    dayBtn.title = `Sisa waktu: ~${diffText}. Klik untuk ubah Hari ini / Besok.`;
+                }
+
+                // Klik tombol untuk toggle Hari ini <-> Besok secara manual
+                dayBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const currentTarget = new Date(acc.targetTimestamp);
+                    const now = new Date();
+
+                    if (isTom) {
+                        // Coba ubah ke Hari Ini
+                        const candidate = new Date(currentTarget);
+                        candidate.setFullYear(now.getFullYear(), now.getMonth(), now.getDate());
+
+                        if (candidate.getTime() <= Date.now()) {
+                            showToast(`Jam ${acc.reset} sudah lewat hari ini. Tetap diatur besok.`);
+                            return;
+                        }
+                        acc.targetTimestamp = candidate.getTime();
+                        showToast(`Diubah ke Hari ini jam ${acc.reset}`);
+                    } else {
+                        // Ubah ke Besok
+                        const tom = new Date();
+                        tom.setDate(tom.getDate() + 1);
+                        const candidate = new Date(currentTarget);
+                        candidate.setFullYear(tom.getFullYear(), tom.getMonth(), tom.getDate());
+                        acc.targetTimestamp = candidate.getTime();
+                        showToast(`Diubah ke Besok jam ${acc.reset}`);
+                    }
+                    save(); render();
+                });
+
+                wrap.appendChild(dayBtn);
+            }
+
+            tdTime.appendChild(wrap);
         } else {
             const d = document.createElement('span');
             d.className = 'dash';
@@ -446,13 +786,17 @@ function render() {
             tdTime.appendChild(d);
         }
 
+        // Sedang Mengerjakan
         const tdTask = document.createElement('td');
         const taskInp = document.createElement('input');
         taskInp.type = 'text';
         taskInp.className = 'task-input';
-        taskInp.placeholder = 'tugas...';
+        taskInp.placeholder = 'tulis tugas...';
         taskInp.value = acc.task;
-        taskInp.addEventListener('input', e => { acc.task = e.target.value; save(); });
+        taskInp.addEventListener('input', e => {
+            acc.task = e.target.value;
+            save();
+        });
         tdTask.appendChild(taskInp);
 
         tr.append(tdNo, tdName, tdStatus, tdTime, tdTask);
@@ -461,20 +805,33 @@ function render() {
     renderSummary();
 }
 
+// === Auto Reset Check Tiap Detik ===
 function autoReset() {
-    const n = new Date();
-    const now = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+    const nowMs = Date.now();
     let changed = false;
+
     data.forEach(a => {
-        if (a.status === 'limit' && a.reset && a.reset <= now) {
-            a.status = 'ok'; a.reset = ''; changed = true;
+        // Cek apakah targetTimestamp sudah tercapai atau lewat
+        if (a.status === 'limit' && a.targetTimestamp && nowMs >= a.targetTimestamp) {
+            a.status = 'ok';
+            a.reset = '';
+            a.targetTimestamp = null;
+            changed = true;
         }
     });
-    if (changed) { save(); render(); }
+
+    if (changed) {
+        save();
+        render();
+    }
 }
 
-tick(); render();
-setInterval(() => { tick(); autoReset(); }, 1000);
+tick();
+render();
+setInterval(() => {
+    tick();
+    autoReset();
+}, 1000);
 </script>
 </body>
 </html>
