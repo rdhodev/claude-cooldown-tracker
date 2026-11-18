@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monitor Limit Akun Claude</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1915">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Monitor Akun">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,12 +44,18 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* safe area for notch devices */
+        .header { padding-top: max(12px, env(safe-area-inset-top)); }
+        .table-area { margin-bottom: max(8px, env(safe-area-inset-bottom)); }
+
         /* === HEADER === */
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 14px 8px;
+            padding-left: 14px;
+            padding-right: 14px;
+            padding-bottom: 8px;
             flex-shrink: 0;
         }
 
@@ -121,7 +137,8 @@
         .table-area {
             flex: 1;
             overflow: hidden;
-            margin: 0 8px 8px;
+            margin-left: 8px;
+            margin-right: 8px;
             background: var(--surface);
             border-radius: 12px;
             border: 1px solid var(--border);
@@ -148,7 +165,6 @@
             width: 100%;
         }
 
-        /* Sticky header */
         thead th {
             position: sticky;
             top: 0;
@@ -173,7 +189,7 @@
 
         thead th iconify-icon { font-size: 0.8rem; }
 
-        /* Sticky columns: No + Nama */
+        /* Sticky columns */
         th:nth-child(1), td:nth-child(1) {
             position: sticky;
             left: 0;
@@ -191,18 +207,13 @@
         }
 
         thead th:nth-child(1),
-        thead th:nth-child(2) {
-            z-index: 5;
-        }
+        thead th:nth-child(2) { z-index: 5; }
 
-        /* Shadow on sticky edge */
         td:nth-child(2)::after,
         th:nth-child(2)::after {
             content: '';
             position: absolute;
-            top: 0;
-            right: -5px;
-            bottom: 0;
+            top: 0; right: -5px; bottom: 0;
             width: 5px;
             background: linear-gradient(to right, rgba(0,0,0,0.15), transparent);
             pointer-events: none;
@@ -212,7 +223,6 @@
         th:nth-child(4) { min-width: 88px; }
         th:nth-child(5) { min-width: 160px; }
 
-        /* Body */
         tbody td {
             padding: 7px 8px;
             font-size: 0.8rem;
@@ -305,6 +315,45 @@
             background: var(--bg);
         }
 
+        /* Install banner */
+        .install-bar {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 8px 14px;
+            flex-shrink: 0;
+        }
+
+        .install-bar.show { display: flex; }
+
+        .install-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 7px 16px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .install-btn:active { opacity: 0.8; }
+        .install-btn iconify-icon { font-size: 1rem; }
+
+        .install-dismiss {
+            background: none;
+            border: none;
+            color: var(--text2);
+            font-size: 0.72rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
         @media (max-width: 480px) {
             th:nth-child(1), td:nth-child(1) { width: 28px; min-width: 28px; }
             th:nth-child(2), td:nth-child(2) { left: 28px; min-width: 100px; }
@@ -327,6 +376,14 @@
         </div>
     </div>
 
+    <!-- Install prompt -->
+    <div class="install-bar" id="installBar">
+        <button class="install-btn" id="installBtn">
+            <iconify-icon icon="solar:download-minimalistic-bold"></iconify-icon> Install Aplikasi
+        </button>
+        <button class="install-dismiss" id="installDismiss">Nanti</button>
+    </div>
+
     <div class="summary" id="summary"></div>
 
     <div class="table-area">
@@ -347,6 +404,101 @@
     </div>
 
 <script>
+// === PWA: Service Worker & Install ===
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
+
+let deferredPrompt;
+const installBar = document.getElementById('installBar');
+const installBtn = document.getElementById('installBtn');
+const installDismiss = document.getElementById('installDismiss');
+
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBar.classList.add('show');
+});
+
+installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBar.classList.remove('show');
+});
+
+installDismiss.addEventListener('click', () => {
+    installBar.classList.remove('show');
+});
+
+window.addEventListener('appinstalled', () => {
+    installBar.classList.remove('show');
+});
+
+// === Generate PNG icons on first load ===
+(function generateIcons() {
+    if (localStorage.getItem('icons_generated')) return;
+    [192, 512].forEach(size => {
+        const c = document.createElement('canvas');
+        c.width = size; c.height = size;
+        const ctx = c.getContext('2d');
+        const r = size * 0.1875;
+
+        // rounded rect bg
+        ctx.beginPath();
+        ctx.moveTo(r, 0);
+        ctx.lineTo(size - r, 0);
+        ctx.quadraticCurveTo(size, 0, size, r);
+        ctx.lineTo(size, size - r);
+        ctx.quadraticCurveTo(size, size, size - r, size);
+        ctx.lineTo(r, size);
+        ctx.quadraticCurveTo(0, size, 0, size - r);
+        ctx.lineTo(0, r);
+        ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.closePath();
+        ctx.fillStyle = '#1a1915';
+        ctx.fill();
+
+        // inner rect
+        const m = size * 0.11;
+        const ir = size * 0.125;
+        ctx.beginPath();
+        ctx.roundRect(m, m, size - m * 2, size - m * 2, ir);
+        ctx.fillStyle = '#2b2a27';
+        ctx.fill();
+
+        // circle
+        ctx.beginPath();
+        ctx.arc(size / 2, size * 0.43, size * 0.14, 0, Math.PI * 2);
+        ctx.fillStyle = '#D97757';
+        ctx.fill();
+
+        // bars
+        ctx.fillStyle = 'rgba(217,119,87,0.6)';
+        ctx.beginPath();
+        ctx.roundRect(size * 0.33, size * 0.625, size * 0.34, size * 0.03, size * 0.015);
+        ctx.fill();
+
+        ctx.fillStyle = '#3d3c38';
+        [0.695, 0.75, 0.805].forEach((y, i) => {
+            const w = i === 2 ? 0.31 : 0.47;
+            ctx.beginPath();
+            ctx.roundRect(size * 0.265, size * y, size * w, size * 0.024, size * 0.012);
+            ctx.fill();
+        });
+
+        c.toBlob(blob => {
+            const a = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = 'icon-' + size + '.png';
+            // We can't auto-save, so we cache via SW
+        }, 'image/png');
+    });
+})();
+
+// === App Logic ===
 const ACCOUNTS = [
     'bangridho22','bangridho41','h2787270','Cha Hae-in',
     'hh1508249','hidayat22ti','hidayatridho968','hosting ebr',
@@ -393,17 +545,14 @@ function render() {
     data.forEach((acc, i) => {
         const tr = document.createElement('tr');
 
-        // No
         const tdNo = document.createElement('td');
         tdNo.className = 'cell-no';
         tdNo.textContent = i + 1;
 
-        // Name
         const tdName = document.createElement('td');
         tdName.className = 'cell-name';
         tdName.textContent = acc.name;
 
-        // Status
         const tdStatus = document.createElement('td');
         const badge = document.createElement('span');
         badge.className = 'badge ' + (acc.status === 'limit' ? 'limit' : 'ok');
@@ -417,7 +566,6 @@ function render() {
         });
         tdStatus.appendChild(badge);
 
-        // Reset
         const tdTime = document.createElement('td');
         if (acc.status === 'limit') {
             const inp = document.createElement('input');
@@ -433,7 +581,6 @@ function render() {
             tdTime.appendChild(d);
         }
 
-        // Task
         const tdTask = document.createElement('td');
         const taskInp = document.createElement('input');
         taskInp.type = 'text';
