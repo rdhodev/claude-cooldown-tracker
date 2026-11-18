@@ -2,449 +2,467 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monitor Limit Akun Claude</title>
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #1a1915;
+            --surface: #2b2a27;
+            --surface2: #353430;
+            --border: #3d3c38;
+            --text: #ececea;
+            --text2: #8b8b80;
+            --accent: #D97757;
+            --accent-dim: rgba(217,119,87,0.12);
+            --green: #5cb585;
+            --green-bg: rgba(92,181,133,0.1);
+            --red: #e06c5c;
+            --red-bg: rgba(224,108,92,0.1);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            color: #1a1a2e;
-            min-height: 100vh;
-            padding: 24px 16px;
+            font-family: 'Söhne', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
+        /* === HEADER === */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px 8px;
+            flex-shrink: 0;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 28px;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 8px;
+        .header-left iconify-icon {
+            font-size: 1.2rem;
+            color: var(--accent);
         }
 
-        .clock {
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: #6c63ff;
-            letter-spacing: 2px;
-            font-variant-numeric: tabular-nums;
+        .header-left h1 {
+            font-size: 0.92rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
-        .clock-label {
-            font-size: 0.8rem;
-            color: #888;
-            margin-top: 2px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .clock-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface);
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
-        .table-wrapper {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-            overflow-x: auto;
+        .clock-box iconify-icon {
+            font-size: 0.9rem;
+            color: var(--accent);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 700px;
-        }
-
-        thead th {
-            background: #6c63ff;
-            color: #fff;
-            padding: 14px 12px;
+        .clock-box span {
             font-size: 0.82rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            color: var(--text);
+            letter-spacing: 0.5px;
+        }
+
+        /* === SUMMARY === */
+        .summary {
+            display: flex;
+            gap: 8px;
+            padding: 0 14px 10px;
+            flex-shrink: 0;
+        }
+
+        .stat {
+            flex: 1;
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 8px 0;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-val {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.58rem;
+            color: var(--text2);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-top: 1px;
+        }
+
+        .stat.s-total .stat-val { color: var(--accent); }
+        .stat.s-avail .stat-val { color: var(--green); }
+        .stat.s-limit .stat-val { color: var(--red); }
+
+        /* === TABLE AREA === */
+        .table-area {
+            flex: 1;
+            overflow: hidden;
+            margin: 0 8px 8px;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .table-scroll {
+            flex: 1;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .table-scroll::-webkit-scrollbar { width: 3px; height: 3px; }
+        .table-scroll::-webkit-scrollbar-track { background: transparent; }
+        .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 600px;
+            width: 100%;
+        }
+
+        /* Sticky header */
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: var(--surface2);
+            padding: 10px 8px;
+            font-size: 0.62rem;
             font-weight: 600;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             text-align: left;
             white-space: nowrap;
+            border-bottom: 1px solid var(--border);
         }
 
-        thead th:first-child {
-            border-radius: 12px 0 0 0;
+        thead th .th-inner {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        thead th iconify-icon { font-size: 0.8rem; }
+
+        /* Sticky columns: No + Nama */
+        th:nth-child(1), td:nth-child(1) {
+            position: sticky;
+            left: 0;
+            z-index: 3;
+            width: 34px;
+            min-width: 34px;
             text-align: center;
-            width: 48px;
         }
 
-        thead th:last-child {
-            border-radius: 0 12px 0 0;
+        th:nth-child(2), td:nth-child(2) {
+            position: sticky;
+            left: 34px;
+            z-index: 3;
+            min-width: 110px;
         }
 
-        tbody tr {
-            transition: background 0.15s;
+        thead th:nth-child(1),
+        thead th:nth-child(2) {
+            z-index: 5;
         }
 
-        tbody tr:hover {
-            background: #f7f7ff;
+        /* Shadow on sticky edge */
+        td:nth-child(2)::after,
+        th:nth-child(2)::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -5px;
+            bottom: 0;
+            width: 5px;
+            background: linear-gradient(to right, rgba(0,0,0,0.15), transparent);
+            pointer-events: none;
         }
 
-        tbody tr:not(:last-child) td {
-            border-bottom: 1px solid #eee;
-        }
+        th:nth-child(3) { min-width: 88px; }
+        th:nth-child(4) { min-width: 88px; }
+        th:nth-child(5) { min-width: 160px; }
 
-        td {
-            padding: 10px 12px;
-            font-size: 0.9rem;
+        /* Body */
+        tbody td {
+            padding: 7px 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
             vertical-align: middle;
         }
 
-        td:first-child {
-            text-align: center;
-            color: #aaa;
-            font-weight: 600;
-            font-size: 0.82rem;
-        }
+        tbody tr:last-child td { border-bottom: none; }
 
-        .nama-akun {
+        .cell-no {
+            color: var(--text2);
+            font-size: 0.7rem;
             font-weight: 600;
         }
 
-        /* Status badge */
+        .cell-name {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        /* Badge */
         .badge {
-            display: inline-block;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.78rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.68rem;
             font-weight: 600;
             cursor: pointer;
             user-select: none;
-            transition: all 0.2s;
-            text-align: center;
-            min-width: 90px;
+            transition: opacity 0.12s;
         }
 
+        .badge:active { opacity: 0.65; }
+        .badge iconify-icon { font-size: 0.85rem; }
+
         .badge.ok {
-            background: #e6f9ed;
-            color: #1b9e4b;
-            border: 1px solid #b6ecc8;
+            background: var(--green-bg);
+            color: var(--green);
         }
 
         .badge.limit {
-            background: #fff0e6;
-            color: #d9534f;
-            border: 1px solid #ffd3b6;
-        }
-
-        .badge:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: var(--red-bg);
+            color: var(--red);
         }
 
         /* Time input */
-        input[type="time"] {
-            border: 1px solid #ddd;
+        .time-input {
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 5px 8px;
-            font-size: 0.85rem;
+            color: var(--text);
+            padding: 4px 5px;
+            font-size: 0.75rem;
             font-family: inherit;
-            color: #333;
-            background: #fafafa;
+            width: 80px;
             outline: none;
-            transition: border-color 0.2s;
-            width: 110px;
         }
 
-        input[type="time"]:focus {
-            border-color: #6c63ff;
-            background: #fff;
+        .time-input:focus { border-color: var(--accent); }
+
+        .time-input::-webkit-calendar-picker-indicator {
+            filter: invert(0.8) sepia(0.3) hue-rotate(-10deg) brightness(1.1);
+            cursor: pointer;
         }
 
-        input[type="time"]:disabled {
-            background: transparent;
-            border-color: transparent;
-            color: #ccc;
-            cursor: default;
-        }
+        .dash { color: var(--border); }
 
-        /* Text input */
+        /* Task input */
         .task-input {
-            border: 1px solid #eee;
+            background: transparent;
+            border: 1px solid transparent;
             border-radius: 6px;
-            padding: 6px 10px;
-            font-size: 0.85rem;
+            color: var(--text);
+            padding: 4px 6px;
+            font-size: 0.75rem;
             font-family: inherit;
-            color: #333;
-            background: #fafafa;
-            outline: none;
             width: 100%;
-            min-width: 160px;
-            transition: border-color 0.2s;
+            min-width: 140px;
+            outline: none;
         }
+
+        .task-input::placeholder { color: var(--text2); opacity: 0.4; }
 
         .task-input:focus {
-            border-color: #6c63ff;
-            background: #fff;
+            border-color: var(--border);
+            background: var(--bg);
         }
 
-        .dash {
-            color: #ccc;
-            font-weight: 400;
-        }
-
-        /* Summary bar */
-        .summary {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-
-        .summary-item {
-            background: #fff;
-            border-radius: 10px;
-            padding: 10px 22px;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .summary-item span {
-            font-size: 1.1rem;
-            margin-left: 4px;
-        }
-
-        .summary-item.avail span { color: #1b9e4b; }
-        .summary-item.limited span { color: #d9534f; }
-        .summary-item.total span { color: #6c63ff; }
-
-        /* Responsive */
-        @media (max-width: 640px) {
-            body { padding: 12px 6px; }
-            header h1 { font-size: 1.15rem; }
-            .clock { font-size: 1.8rem; }
-            thead th, td { padding: 8px 6px; font-size: 0.8rem; }
-            .badge { min-width: 74px; padding: 3px 10px; font-size: 0.72rem; }
+        @media (max-width: 480px) {
+            th:nth-child(1), td:nth-child(1) { width: 28px; min-width: 28px; }
+            th:nth-child(2), td:nth-child(2) { left: 28px; min-width: 100px; }
+            .cell-name { font-size: 0.74rem; }
+            .badge { padding: 3px 8px; font-size: 0.63rem; }
+            .badge iconify-icon { font-size: 0.78rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📋 Monitor Limit Akun Claude</h1>
-            <div class="clock" id="clock">--:--:--</div>
-            <div class="clock-label">Waktu Saat Ini</div>
-        </header>
 
-        <div class="table-wrapper">
+    <div class="header">
+        <div class="header-left">
+            <iconify-icon icon="solar:monitor-smartphone-bold-duotone"></iconify-icon>
+            <h1>Monitor Akun</h1>
+        </div>
+        <div class="clock-box">
+            <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
+            <span id="clock">--:--:--</span>
+        </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="table-area">
+        <div class="table-scroll">
             <table>
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Nama Akun</th>
-                        <th>Status</th>
-                        <th>Selesai Limit</th>
-                        <th>Sedang Mengerjakan</th>
+                        <th>#</th>
+                        <th><div class="th-inner"><iconify-icon icon="solar:user-bold"></iconify-icon> Akun</div></th>
+                        <th><div class="th-inner"><iconify-icon icon="solar:tag-horizontal-bold"></iconify-icon> Status</div></th>
+                        <th><div class="th-inner"><iconify-icon icon="solar:alarm-bold"></iconify-icon> Reset</div></th>
+                        <th><div class="th-inner"><iconify-icon icon="solar:pen-new-round-bold"></iconify-icon> Tugas</div></th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-
-        <div class="summary" id="summary"></div>
     </div>
 
-    <script>
-        // === Data default ===
-        const DEFAULT_ACCOUNTS = [
-            'bangridho22',
-            'bangridho41',
-            'h2787270',
-            'Cha Hae-in',
-            'hh1508249',
-            'hidayat22ti',
-            'hidayatridho968',
-            'hosting ebr',
-            'penguin',
-            'Ridho.dev',
-            'rdho.hdyat',
-            'ridhohidayat973'
-        ];
+<script>
+const ACCOUNTS = [
+    'bangridho22','bangridho41','h2787270','Cha Hae-in',
+    'hh1508249','hidayat22ti','hidayatridho968','hosting ebr',
+    'penguin','Ridho.dev','rdho.hdyat','ridhohidayat973'
+];
+const KEY = 'claude_limit_v3';
 
-        const STORAGE_KEY = 'claude_limit_monitor';
+const defaults = () => ACCOUNTS.map(n => ({ name:n, status:'ok', reset:'', task:'' }));
 
-        // === Helpers ===
-        function getDefaultData() {
-            return DEFAULT_ACCOUNTS.map(name => ({
-                name,
-                status: 'ok',       // 'ok' | 'limit'
-                resetTime: '',       // 'HH:MM' or ''
-                task: ''
-            }));
+function load() {
+    try {
+        const d = JSON.parse(localStorage.getItem(KEY));
+        if (Array.isArray(d) && d.length === ACCOUNTS.length) return d;
+    } catch(_){}
+    return defaults();
+}
+
+function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
+
+let data = load();
+
+const clockEl = document.getElementById('clock');
+const bodyEl = document.getElementById('tableBody');
+const summaryEl = document.getElementById('summary');
+
+function tick() {
+    const n = new Date();
+    clockEl.textContent =
+        String(n.getHours()).padStart(2,'0') + ':' +
+        String(n.getMinutes()).padStart(2,'0') + ':' +
+        String(n.getSeconds()).padStart(2,'0');
+}
+
+function renderSummary() {
+    const t = data.length, l = data.filter(a => a.status==='limit').length;
+    summaryEl.innerHTML =
+        '<div class="stat s-total"><div class="stat-val">'+t+'</div><div class="stat-label">Total</div></div>' +
+        '<div class="stat s-avail"><div class="stat-val">'+(t-l)+'</div><div class="stat-label">Tersedia</div></div>' +
+        '<div class="stat s-limit"><div class="stat-val">'+l+'</div><div class="stat-label">Limit</div></div>';
+}
+
+function render() {
+    bodyEl.innerHTML = '';
+    data.forEach((acc, i) => {
+        const tr = document.createElement('tr');
+
+        // No
+        const tdNo = document.createElement('td');
+        tdNo.className = 'cell-no';
+        tdNo.textContent = i + 1;
+
+        // Name
+        const tdName = document.createElement('td');
+        tdName.className = 'cell-name';
+        tdName.textContent = acc.name;
+
+        // Status
+        const tdStatus = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = 'badge ' + (acc.status === 'limit' ? 'limit' : 'ok');
+        badge.innerHTML = acc.status === 'limit'
+            ? '<iconify-icon icon="solar:close-circle-bold"></iconify-icon>Limit'
+            : '<iconify-icon icon="solar:check-circle-bold"></iconify-icon>Aktif';
+        badge.addEventListener('click', () => {
+            acc.status = acc.status === 'ok' ? 'limit' : 'ok';
+            if (acc.status === 'ok') acc.reset = '';
+            save(); render();
+        });
+        tdStatus.appendChild(badge);
+
+        // Reset
+        const tdTime = document.createElement('td');
+        if (acc.status === 'limit') {
+            const inp = document.createElement('input');
+            inp.type = 'time';
+            inp.className = 'time-input';
+            inp.value = acc.reset;
+            inp.addEventListener('change', e => { acc.reset = e.target.value; save(); });
+            tdTime.appendChild(inp);
+        } else {
+            const d = document.createElement('span');
+            d.className = 'dash';
+            d.textContent = '—';
+            tdTime.appendChild(d);
         }
 
-        function loadData() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) {
-                    const parsed = JSON.parse(raw);
-                    if (Array.isArray(parsed) && parsed.length === DEFAULT_ACCOUNTS.length) {
-                        return parsed;
-                    }
-                }
-            } catch (_) {}
-            return getDefaultData();
+        // Task
+        const tdTask = document.createElement('td');
+        const taskInp = document.createElement('input');
+        taskInp.type = 'text';
+        taskInp.className = 'task-input';
+        taskInp.placeholder = 'tugas...';
+        taskInp.value = acc.task;
+        taskInp.addEventListener('input', e => { acc.task = e.target.value; save(); });
+        tdTask.appendChild(taskInp);
+
+        tr.append(tdNo, tdName, tdStatus, tdTime, tdTask);
+        bodyEl.appendChild(tr);
+    });
+    renderSummary();
+}
+
+function autoReset() {
+    const n = new Date();
+    const now = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+    let changed = false;
+    data.forEach(a => {
+        if (a.status === 'limit' && a.reset && a.reset <= now) {
+            a.status = 'ok'; a.reset = ''; changed = true;
         }
+    });
+    if (changed) { save(); render(); }
+}
 
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
-        }
-
-        // === State ===
-        let accounts = loadData();
-
-        // === Clock ===
-        const clockEl = document.getElementById('clock');
-
-        function updateClock() {
-            const now = new Date();
-            clockEl.textContent = now.toLocaleTimeString('id-ID', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-            });
-        }
-
-        // === Render table ===
-        const tbody = document.getElementById('tableBody');
-        const summaryEl = document.getElementById('summary');
-
-        function render() {
-            tbody.innerHTML = '';
-
-            accounts.forEach((acc, i) => {
-                const tr = document.createElement('tr');
-
-                // No
-                const tdNo = document.createElement('td');
-                tdNo.textContent = i + 1;
-                tr.appendChild(tdNo);
-
-                // Nama
-                const tdName = document.createElement('td');
-                tdName.className = 'nama-akun';
-                tdName.textContent = acc.name;
-                tr.appendChild(tdName);
-
-                // Status badge
-                const tdStatus = document.createElement('td');
-                const badge = document.createElement('span');
-                badge.className = 'badge ' + (acc.status === 'limit' ? 'limit' : 'ok');
-                badge.textContent = acc.status === 'limit' ? 'Limit' : 'Tidak Limit';
-                badge.title = 'Klik untuk toggle status';
-                badge.addEventListener('click', () => {
-                    if (acc.status === 'ok') {
-                        acc.status = 'limit';
-                    } else {
-                        acc.status = 'ok';
-                        acc.resetTime = '';
-                    }
-                    saveData();
-                    render();
-                });
-                tdStatus.appendChild(badge);
-                tr.appendChild(tdStatus);
-
-                // Selesai Limit
-                const tdTime = document.createElement('td');
-                if (acc.status === 'limit') {
-                    const timeInput = document.createElement('input');
-                    timeInput.type = 'time';
-                    timeInput.value = acc.resetTime;
-                    timeInput.addEventListener('change', (e) => {
-                        acc.resetTime = e.target.value;
-                        saveData();
-                    });
-                    tdTime.appendChild(timeInput);
-                } else {
-                    const dash = document.createElement('span');
-                    dash.className = 'dash';
-                    dash.textContent = '—';
-                    tdTime.appendChild(dash);
-                }
-                tr.appendChild(tdTime);
-
-                // Sedang Mengerjakan
-                const tdTask = document.createElement('td');
-                const taskInput = document.createElement('input');
-                taskInput.type = 'text';
-                taskInput.className = 'task-input';
-                taskInput.placeholder = 'Tulis tugas...';
-                taskInput.value = acc.task;
-                taskInput.addEventListener('input', (e) => {
-                    acc.task = e.target.value;
-                    saveData();
-                });
-                tdTask.appendChild(taskInput);
-                tr.appendChild(tdTask);
-
-                tbody.appendChild(tr);
-            });
-
-            updateSummary();
-        }
-
-        function updateSummary() {
-            const total = accounts.length;
-            const limited = accounts.filter(a => a.status === 'limit').length;
-            const avail = total - limited;
-
-            summaryEl.innerHTML = `
-                <div class="summary-item total">Total: <span>${total}</span></div>
-                <div class="summary-item avail">Tersedia: <span>${avail}</span></div>
-                <div class="summary-item limited">Limit: <span>${limited}</span></div>
-            `;
-        }
-
-        // === Auto-reset logic ===
-        function checkAutoReset() {
-            const now = new Date();
-            const currentHH = String(now.getHours()).padStart(2, '0');
-            const currentMM = String(now.getMinutes()).padStart(2, '0');
-            const currentTime = currentHH + ':' + currentMM;
-
-            let changed = false;
-
-            accounts.forEach(acc => {
-                if (acc.status === 'limit' && acc.resetTime && acc.resetTime <= currentTime) {
-                    acc.status = 'ok';
-                    acc.resetTime = '';
-                    changed = true;
-                }
-            });
-
-            if (changed) {
-                saveData();
-                render();
-            }
-        }
-
-        // === Init ===
-        updateClock();
-        render();
-
-        setInterval(() => {
-            updateClock();
-            checkAutoReset();
-        }, 1000);
-    </script>
+tick(); render();
+setInterval(() => { tick(); autoReset(); }, 1000);
+</script>
 </body>
 </html>
