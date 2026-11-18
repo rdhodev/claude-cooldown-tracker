@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Limit Akun Claude</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .clock {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #6c63ff;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .clock-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .table-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        thead th {
+            background: #6c63ff;
+            color: #fff;
+            padding: 14px 12px;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        thead th:first-child {
+            border-radius: 12px 0 0 0;
+            text-align: center;
+            width: 48px;
+        }
+
+        thead th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        tbody tr {
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: #f7f7ff;
+        }
+
+        tbody tr:not(:last-child) td {
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        td:first-child {
+            text-align: center;
+            color: #aaa;
+            font-weight: 600;
+            font-size: 0.82rem;
+        }
+
+        .nama-akun {
+            font-weight: 600;
+        }
+
+        /* Status badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .badge.ok {
+            background: #e6f9ed;
+            color: #1b9e4b;
+            border: 1px solid #b6ecc8;
+        }
+
+        .badge.limit {
+            background: #fff0e6;
+            color: #d9534f;
+            border: 1px solid #ffd3b6;
+        }
+
+        .badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Time input */
+        input[type="time"] {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            color: #333;
+            background: #fafafa;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 110px;
+        }
+
+        input[type="time"]:focus {
+            border-color: #6c63ff;
+            background: #fff;
+        }
+
+        input[type="time"]:disabled {
+            background: transparent;
+            border-color: transparent;
+            color: #ccc;
+            cursor: default;
+        }
+
+        /* Text input */
+        .task-input {
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            color: #333;
+            background: #fafafa;
+            outline: none;
+            width: 100%;
+            min-width: 160px;
+            transition: border-color 0.2s;
+        }
+
+        .task-input:focus {
+            border-color: #6c63ff;
+            background: #fff;
+        }
+
+        .dash {
+            color: #ccc;
+            font-weight: 400;
+        }
+
+        /* Summary bar */
+        .summary {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .summary-item {
+            background: #fff;
+            border-radius: 10px;
+            padding: 10px 22px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .summary-item span {
+            font-size: 1.1rem;
+            margin-left: 4px;
+        }
+
+        .summary-item.avail span { color: #1b9e4b; }
+        .summary-item.limited span { color: #d9534f; }
+        .summary-item.total span { color: #6c63ff; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 12px 6px; }
+            header h1 { font-size: 1.15rem; }
+            .clock { font-size: 1.8rem; }
+            thead th, td { padding: 8px 6px; font-size: 0.8rem; }
+            .badge { min-width: 74px; padding: 3px 10px; font-size: 0.72rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Monitor Limit Akun Claude</h1>
+            <div class="clock" id="clock">--:--:--</div>
+            <div class="clock-label">Waktu Saat Ini</div>
+        </header>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Akun</th>
+                        <th>Status</th>
+                        <th>Selesai Limit</th>
+                        <th>Sedang Mengerjakan</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="summary" id="summary"></div>
+    </div>
+
+    <script>
+        // === Data default ===
+        const DEFAULT_ACCOUNTS = [
+            'bangridho22',
+            'bangridho41',
+            'h2787270',
+            'Cha Hae-in',
+            'hh1508249',
+            'hidayat22ti',
+            'hidayatridho968',
+            'hosting ebr',
+            'penguin',
+            'Ridho.dev',
+            'rdho.hdyat',
+            'ridhohidayat973'
+        ];
+
+        const STORAGE_KEY = 'claude_limit_monitor';
+
+        // === Helpers ===
+        function getDefaultData() {
+            return DEFAULT_ACCOUNTS.map(name => ({
+                name,
+                status: 'ok',       // 'ok' | 'limit'
+                resetTime: '',       // 'HH:MM' or ''
+                task: ''
+            }));
+        }
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length === DEFAULT_ACCOUNTS.length) {
+                        return parsed;
+                    }
+                }
+            } catch (_) {}
+            return getDefaultData();
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+        }
+
+        // === State ===
+        let accounts = loadData();
+
+        // === Clock ===
+        const clockEl = document.getElementById('clock');
+
+        function updateClock() {
+            const now = new Date();
+            clockEl.textContent = now.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+        }
+
+        // === Render table ===
+        const tbody = document.getElementById('tableBody');
+        const summaryEl = document.getElementById('summary');
+
+        function render() {
+            tbody.innerHTML = '';
+
+            accounts.forEach((acc, i) => {
+                const tr = document.createElement('tr');
+
+                // No
+                const tdNo = document.createElement('td');
+                tdNo.textContent = i + 1;
+                tr.appendChild(tdNo);
+
+                // Nama
+                const tdName = document.createElement('td');
+                tdName.className = 'nama-akun';
+                tdName.textContent = acc.name;
+                tr.appendChild(tdName);
+
+                // Status badge
+                const tdStatus = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = 'badge ' + (acc.status === 'limit' ? 'limit' : 'ok');
+                badge.textContent = acc.status === 'limit' ? 'Limit' : 'Tidak Limit';
+                badge.title = 'Klik untuk toggle status';
+                badge.addEventListener('click', () => {
+                    if (acc.status === 'ok') {
+                        acc.status = 'limit';
+                    } else {
+                        acc.status = 'ok';
+                        acc.resetTime = '';
+                    }
+                    saveData();
+                    render();
+                });
+                tdStatus.appendChild(badge);
+                tr.appendChild(tdStatus);
+
+                // Selesai Limit
+                const tdTime = document.createElement('td');
+                if (acc.status === 'limit') {
+                    const timeInput = document.createElement('input');
+                    timeInput.type = 'time';
+                    timeInput.value = acc.resetTime;
+                    timeInput.addEventListener('change', (e) => {
+                        acc.resetTime = e.target.value;
+                        saveData();
+                    });
+                    tdTime.appendChild(timeInput);
+                } else {
+                    const dash = document.createElement('span');
+                    dash.className = 'dash';
+                    dash.textContent = '—';
+                    tdTime.appendChild(dash);
+                }
+                tr.appendChild(tdTime);
+
+                // Sedang Mengerjakan
+                const tdTask = document.createElement('td');
+                const taskInput = document.createElement('input');
+                taskInput.type = 'text';
+                taskInput.className = 'task-input';
+                taskInput.placeholder = 'Tulis tugas...';
+                taskInput.value = acc.task;
+                taskInput.addEventListener('input', (e) => {
+                    acc.task = e.target.value;
+                    saveData();
+                });
+                tdTask.appendChild(taskInput);
+                tr.appendChild(tdTask);
+
+                tbody.appendChild(tr);
+            });
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const total = accounts.length;
+            const limited = accounts.filter(a => a.status === 'limit').length;
+            const avail = total - limited;
+
+            summaryEl.innerHTML = `
+                <div class="summary-item total">Total: <span>${total}</span></div>
+                <div class="summary-item avail">Tersedia: <span>${avail}</span></div>
+                <div class="summary-item limited">Limit: <span>${limited}</span></div>
+            `;
+        }
+
+        // === Auto-reset logic ===
+        function checkAutoReset() {
+            const now = new Date();
+            const currentHH = String(now.getHours()).padStart(2, '0');
+            const currentMM = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = currentHH + ':' + currentMM;
+
+            let changed = false;
+
+            accounts.forEach(acc => {
+                if (acc.status === 'limit' && acc.resetTime && acc.resetTime <= currentTime) {
+                    acc.status = 'ok';
+                    acc.resetTime = '';
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                saveData();
+                render();
+            }
+        }
+
+        // === Init ===
+        updateClock();
+        render();
+
+        setInterval(() => {
+            updateClock();
+            checkAutoReset();
+        }, 1000);
+    </script>
+</body>
+</html>
